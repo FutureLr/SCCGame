@@ -1,0 +1,21 @@
+# Language
+language: "Tiếng Việt"
+
+# Login keys
+login: 
+  loginButton: "Đăng nhập"
+  userName: "Tên đăng nhập:"
+  password: "Mật khẩu:"
+  passwordForgot: "Quên mật khẩu?"
+  signinButton: "Đăng ký tài khoản mới"
+
+# Search keys
+search:
+  placeholder: "Nhập tên game..."
+  button: "Tìm kiếm"
+
+# Game grid title keys
+gameGrid:
+  all: "Danh sách game"
+  favor: "Game yêu thích"
+  newest: "Game mới"
