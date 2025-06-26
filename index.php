@@ -16,19 +16,17 @@
 
     </section>
 
-    <section id="game-grid">
-        <h2 data-lang="gameGrid.all"></h2>
-    
+    <div id="game-grid">
         <section id="favor-game-grid">
-            <h3 data-lang="gameGrid.favor"></h3>
-    
+            <h2 data-lang="gameGrid.favor"></h2>
+            <div id="favor-games"></div>
         </section>
     
-        <section id="newest-game-grid">
-            <h3 data-lang="gameGrid.newest"></h3>
-    
+        <section id="genre-game">
+            <h2 data-lang="gameGrid.genreGame"></h2>
+            <div id="genre-games"></div>
         </section>
-    </section>
+    </div>
 </main>
 
 </body>

@@ -133,14 +133,18 @@ main {
 }
 
 
-#game-grid h2,
-#favor-game-grid h3,
-#newest-game-grid h3 {
+#game-grid h1,
+#favor-game-grid h2,
+#genre-game h2 {
     margin-bottom: 12px;
     color: #00e1ff;
     text-shadow: 0 0 4px #00e1ff66;
     border-bottom: 1px solid #00e1ff22;
     padding-bottom: 4px;
+}
+
+#favor-games,#genre-games {
+    
 }
 
 /* ======= Responsive ======= */

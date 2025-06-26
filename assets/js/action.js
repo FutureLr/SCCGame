@@ -9,3 +9,4 @@ document.querySelector("#genre-toggle-btn").addEventListener("click", ()=>{
         genreList.classList.add("active");
     }
 });
+

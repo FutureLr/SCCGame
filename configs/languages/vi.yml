@@ -18,4 +18,4 @@ search:
 gameGrid:
   all: "Danh sách game"
   favor: "Game yêu thích"
-  newest: "Game mới"
+  genreGame: "Thể loại"
