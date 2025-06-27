@@ -23,7 +23,7 @@
         </section>
     
         <section id="genre-game">
-            <h2 data-lang="gameGrid.genreGame"></h2>
+            <h2 data-lang="gameGrid.genre"></h2>
             <div id="genre-games"></div>
         </section>
     </div>

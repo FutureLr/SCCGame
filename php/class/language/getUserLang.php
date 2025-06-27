@@ -12,12 +12,12 @@ try {
         'ok' => true,
         'message' => null,
         'userLang' => $userLang
-    ], JSON_UNESCAPED_UNICODE);
+    ]);
 
 } catch(Exception $error) {
     echo json_encode([
         'ok' => false,
         'message' => $error->getMessage(),
         'userLang' => null
-    ], JSON_UNESCAPED_UNICODE);
+    ]);
 }

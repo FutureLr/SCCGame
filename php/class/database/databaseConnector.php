@@ -6,19 +6,22 @@
 
         public function __construct() {
             try {
-                $db = Spyc::YAMLLoad(realpath(__DIR__ . "/../../../configs/database/database.yml"));
+                $dbPath = realpath(__DIR__ . "/../../../configs/database/database.yml");
+                $fileModifiedTime = filemtime($dbPath);
 
-                $this->conn = new mysqli(
-                    $db['servername'],
-                    $db['username'],
-                    $db['password'],
-                    $db['dbname']
-                );
+                if (session_status() === PHP_SESSION_NONE) session_start();
 
-                if ($this->conn->connect_error) {
-                    die($this->conn->connect_error);
+                if (
+                    isset($_SESSION['database']) &&
+                    isset($_SESSION['database_mtime']) &&
+                    $_SESSION['database_mtime'] === $fileModifiedTime
+                ) {
+                    $db = $_SESSION['database'];
+                } else {
+                    $db = Spyc::YAMLLoad($dbPath);
+                    $_SESSION['database'] = $db;
+                    $_SESSION['database_mtime'] = $fileModifiedTime;
                 }
-
             } catch(Exception $e) {
                 die($e->getMessage());
             }

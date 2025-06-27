@@ -1,3 +1,23 @@
+// Lấy phiên bản mới của tất cả file ngôn ngữ
+async function loadAllLangVersion() {
+    let keys = JSON.parse(localStorage.getItem('language'));
+    let formData = new FormData();
+    keys.forEach(key => {formData.append("keys[]",key)});
+
+    let response = await fetch("php/class/language/checkLangVersion.php");
+    let responeData = await response.text();
+    try {
+        let data = JSON.parse(responeData);
+
+        // mai lam tiep 
+    } catch(error) {
+        console.log(error);
+        console.log(responeData);
+    }
+}
+
+window.addEventListener("load",loadAllLangVersion);
+
 // Lấy ngôn ngữ người dùng từ server (database)
 async function getUserLang() {
     let response = await fetch("php/class/language/getUserLang.php");
@@ -58,7 +78,10 @@ async function loadLang(lang) {
         await setUserLang(userLang);
     } else {
         if (!(userLang = await getUserLang())) {
-            userLang = getBrowserLang();
+            if (!(userLang = JSON.parse(localStorage.getItem("userLang")))) {
+                userLang = getBrowserLang();
+                localStorage.setItem("userLang",userLang);
+            }
         }
     }
 
@@ -70,7 +93,7 @@ async function loadLang(lang) {
         localStorage.removeItem("language");
     }
 
-    let cachedLangData = cachedLang[userLang];
+    let cachedLangData = cachedLang[userLang] ? cachedLang[userLang]["data"] : null;
     if (cachedLangData) {
         return cachedLangData;
     }
@@ -88,14 +111,17 @@ async function loadLang(lang) {
         }
 
         let langData = jsyaml.load(langText);
-        cachedLang[userLang]=langData;
+        if (!cachedLang[userLang]) {
+            cachedLang[userLang] = {};
+        }
+        cachedLang[userLang]["data"]=langData;
         localStorage.setItem("language", JSON.stringify(cachedLang));
         return langData;
     } catch (error) {
         console.error(error);
 
-        if (cachedLang["en"]) {
-            return cachedLang["en"];
+        if (cachedLang["en"] ? cachedLang["en"]["data"] : null) {
+            return cachedLang["en"]["data"];
         }
         const fallbackURL = "configs/languages/en.yml";
         let res = await fetch(fallbackURL);
@@ -108,7 +134,7 @@ async function loadLang(lang) {
         }
         
         let langData = jsyaml.load(langText);
-        cachedLang["en"] = langData;
+        cachedLang["en"]["data"] = langData;
         localStorage.setItem("language", JSON.stringify(cachedLang));
         return langData;
     }
