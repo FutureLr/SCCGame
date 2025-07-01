@@ -1,22 +1,70 @@
-// Lấy phiên bản mới của tất cả file ngôn ngữ
-async function loadAllLangVersion() {
-    let keys = JSON.parse(localStorage.getItem('language'));
+// Lấy số hiệu phiên bản mới nhất của ngôn ngữ
+async function fetchLangMTime(langCode) {
     let formData = new FormData();
-    keys.forEach(key => {formData.append("keys[]",key)});
 
-    let response = await fetch("php/class/language/checkLangVersion.php");
+    if (langCode) {
+        formData.append("keys[]", langCode);
+    } else {
+        let cachedLang;
+        try {
+            cachedLang = JSON.parse(localStorage.getItem('language')) || {};
+        } catch {
+            localStorage.removeItem('language');
+            cachedLang = {};
+        }
+        let keys = Object.keys(cachedLang);
+        keys.forEach(key => { formData.append("keys[]", key) });
+    }
+
+    if ([...formData.entries()].length === 0) {
+        console.warn("No language keys provided for version check.")
+        return null;
+    }
+
+    let response = await fetch("php/class/language/fetchLangVersion.php", {
+        method: "POST",
+        body: formData
+    });
     let responeData = await response.text();
     try {
         let data = JSON.parse(responeData);
 
-        // mai lam tiep 
-    } catch(error) {
-        console.log(error);
-        console.log(responeData);
+        if (data.ok) {
+            return data.mtime;
+        } else {
+            console.error(data.message);
+        }
+    } catch (error) {
+        console.error(error);
+        console.error(responeData);
+        return null;
     }
 }
 
-window.addEventListener("load",loadAllLangVersion);
+async function syncLangCacheWithServer() {
+    let mtime = await fetchLangMTime();
+    if (mtime === null) {
+        return;
+    }
+
+    let cachedLang;
+    try {
+        cachedLang = JSON.parse(localStorage.getItem('language')) || {};
+    } catch {
+        cachedLang = {};
+        localStorage.removeItem('language');
+    }
+
+    for (const [key, version] of Object.entries(mtime)) {
+        if (version !== null && cachedLang[key]) {
+            if (cachedLang[key]['version'] !== version) {
+                cachedLang[key] = await loadLang(key);
+            }
+        }
+    }
+
+    localStorage.setItem("language", JSON.stringify(cachedLang));
+}
 
 // Lấy ngôn ngữ người dùng từ server (database)
 async function getUserLang() {
@@ -27,7 +75,8 @@ async function getUserLang() {
         if (data.ok) {
             return data.userLang;
         } else {
-            throw new Error(data.message);
+            console.warn(data.message);
+            return null;
         }
     } catch (error) {
         console.error(error);
@@ -38,6 +87,7 @@ async function getUserLang() {
 
 // Lưu ngôn ngữ người dùng vào server (database)
 async function setUserLang(userLang) {
+    localStorage.setItem('userLang', userLang);
     const formData = new FormData();
     formData.append("userLang", userLang);
     try {
@@ -56,8 +106,9 @@ async function setUserLang(userLang) {
             return;
         }
 
-        if(!data.ok) {
-            throw new Error(data.message);
+        if (!data.ok) {
+            console.warn(data.message);
+            return;
         }
     } catch (error) {
         console.error(error);
@@ -70,35 +121,9 @@ function getBrowserLang() {
     return lang.replace('_', '-').split('-')[0].toLowerCase();
 }
 
-// Tải dữ liệu ngôn ngữ từ YAML (có cache và fallback)
-async function loadLang(lang) {
-    let userLang;
-    if (lang) {
-        userLang = lang;
-        await setUserLang(userLang);
-    } else {
-        if (!(userLang = await getUserLang())) {
-            if (!(userLang = JSON.parse(localStorage.getItem("userLang")))) {
-                userLang = getBrowserLang();
-                localStorage.setItem("userLang",userLang);
-            }
-        }
-    }
-
-    let cachedLang = {};
-    try {
-        cachedLang = JSON.parse(localStorage.getItem("language") || "{}");
-    } catch (e) {
-        console.warn("Language data in LocalStorage is corrupted. Resetting it now.");
-        localStorage.removeItem("language");
-    }
-
-    let cachedLangData = cachedLang[userLang] ? cachedLang[userLang]["data"] : null;
-    if (cachedLangData) {
-        return cachedLangData;
-    }
-    
-    let langURL = `configs/languages/${userLang}.yml`;
+// Tải dữ liệu ngôn ngữ từ YAML
+async function loadLang(langCode) {
+    let langURL = `configs/languages/${langCode}.yml`;
     try {
         let res = await fetch(langURL);
         if (!res.ok) {
@@ -111,32 +136,76 @@ async function loadLang(lang) {
         }
 
         let langData = jsyaml.load(langText);
-        if (!cachedLang[userLang]) {
-            cachedLang[userLang] = {};
+        let langVersion = await fetchLangMTime(langCode);
+
+        let lang = {
+            version: langVersion[langCode],
+            data: langData
         }
-        cachedLang[userLang]["data"]=langData;
-        localStorage.setItem("language", JSON.stringify(cachedLang));
-        return langData;
+
+        return lang;
     } catch (error) {
         console.error(error);
+        return null;
+    }
+}
 
-        if (cachedLang["en"] ? cachedLang["en"]["data"] : null) {
-            return cachedLang["en"]["data"];
+// Cache dữ liệu ngôn ngữ vào local storage
+function cacheLanguage(langCode, lang) {
+    let cachedLang;
+    try {
+        cachedLang = JSON.parse(localStorage.getItem('language')) || {};
+    } catch {
+        cachedLang = {};
+        localStorage.removeItem('language');
+    }
+    cachedLang[langCode] = lang;
+
+    localStorage.setItem('language', JSON.stringify(cachedLang));
+}
+
+// Lấy dữ liệu ngôn ngữ, fallback và lưu cache
+async function getLang(langCode) {
+    let cachedLang;
+    try {
+        cachedLang = JSON.parse(localStorage.getItem('language')) || {};
+    } catch {
+        cachedLang = {};
+        localStorage.removeItem('language');
+    }
+
+    if (!langCode) {
+        langCode = await getUserLang();
+        if (!langCode) {
+            langCode = localStorage.getItem('userLang');
+
+            if (!langCode) {
+                langCode = getBrowserLang();
+            }
         }
-        const fallbackURL = "configs/languages/en.yml";
-        let res = await fetch(fallbackURL);
-        if (!res.ok) {
-            throw new Error("File does not exist: " + fallbackURL);
+    }
+    
+    let lang;
+    if(!(lang = cachedLang[langCode])) {
+        if(!(lang = await loadLang(langCode))) {
+            if(!(lang = cachedLang['en'])) {
+                if(!(lang = await loadLang('en'))) {
+                    return null;
+                } else {
+                    langCode = 'en';
+                    cacheLanguage(langCode,lang);
+                }
+            } else {
+                langCode = 'en';
+            }
+        } else {
+            cacheLanguage(langCode,lang);
         }
-        let langText = await res.text();
-        if (langText.includes("<!DOCTYPE html>") || langText.includes("<html")) {
-            throw new Error("File does not exist: " + fallbackURL);
-        }
+    }
         
-        let langData = jsyaml.load(langText);
-        cachedLang["en"]["data"] = langData;
-        localStorage.setItem("language", JSON.stringify(cachedLang));
-        return langData;
+    return {
+        code: langCode,
+        data: lang.data
     }
 }
 
@@ -146,10 +215,14 @@ function getNestedValue(object, path) {
 }
 
 // Áp dụng dữ liệu ngôn ngữ vào các phần tử có thuộc tính data-lang
-function applyLang(langData) {
+async function applyLang(langData) {
+    if (langData.code) {
+        await setUserLang(langData.code);
+    }
+
     document.querySelectorAll('[data-lang]').forEach(el => {
-        const key = el.getAttribute('data-lang'); 
-        const value = getNestedValue(langData, key) || "..."; 
+        const key = el.getAttribute('data-lang');
+        const value = getNestedValue(langData.data || {}, key) || "...";
         if (el instanceof HTMLInputElement) {
             el.placeholder = value;
         } else {
@@ -158,10 +231,19 @@ function applyLang(langData) {
     });
 }
 
-// Tải và áp dụng ngôn ngữ ngay khi trang vừa load
-loadLang().then(langData => applyLang(langData));
-
 // Đổi ngôn ngữ theo lựa chọn người dùng
-function changeLang(lang) {
-    loadLang(lang).then(langData => applyLang(langData));
+async function changeLang(langCode) {
+    const langData = await getLang(langCode);
+    applyLang(langData);
+}
+
+
+
+window.onload = async () => {
+    // Đồng bộ dữ liệu ngôn ngữ mới 
+    await syncLangCacheWithServer();
+
+    // Lấy và áp dụng ngôn ngữ ngay khi trang vừa load
+    const langData = await getLang();
+    applyLang(langData);
 }
