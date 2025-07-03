@@ -1,0 +1,21 @@
+# Language
+language: "English"
+
+# Login keys
+login: 
+  loginButton: "Login"
+  userName: "Username:"
+  password: "Password:"
+  passwordForgot: "Forgot password?"
+  signinButton: "Register a new account"
+
+# Search keys
+search:
+  placeholder: "Enter game name..."
+  button: "Search"
+
+# Game grid title keys
+gameGrid:
+  all: "Game List"
+  favor: "Favorite Games"
+  genre: "New Games"

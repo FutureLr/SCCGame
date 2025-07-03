@@ -6,11 +6,12 @@ header {
     padding: 15px 30px;
     box-shadow: 0 2px 8px rgba(0, 255, 255, 0.1);
     border-bottom: 1px solid #00e1ff33;
+    height: 80px;
 }
 
 #header-title h1 {
     font-size: 28px;
-    color: #00e1ff; /* Xanh neon đậm */
+    color: #00e1ff;
     text-shadow: 0 0 6px #00e1ff55;
 }
 
@@ -37,6 +38,7 @@ header {
     cursor: pointer;
     transition: background-color 0.3s, box-shadow 0.3s;
     box-shadow: 0 0 8px #00e1ff44;
+    position: relative;
 }
 
 #language-selector:hover {
@@ -54,6 +56,55 @@ header {
     text-transform: uppercase;
     letter-spacing: 0.5px;
     margin: auto;
+}
+
+#language-dropdown {
+    position: absolute;
+    display: none;
+    flex-direction: column;
+    top: 100%;
+    right: 0;
+    background-color: #1e1e1e;
+    border: 1px solid #00ffff;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+    padding: 5px 0;
+    min-width: 100%;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+}
+
+#language-dropdown::-webkit-scrollbar {
+    width: 5px;
+    color: #00bcd4;
+}
+
+#language-dropdown::-webkit-scrollbar-thumb {
+    background-color: #555;
+    border-radius: 5px;
+}
+
+.language-option {
+    display: flex;
+    flex-wrap: nowrap;
+    width: 100%;
+    padding: 8px 12px;
+    background: none;
+    border: none;
+    color: #fff;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.language-option:hover {
+    background-color: #00bcd42a;
+    color: #00ffff;
+}
+
+#language-selector:hover #language-dropdown {
+    display: flex;
 }
 
 #account-ctn {

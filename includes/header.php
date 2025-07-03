@@ -21,6 +21,10 @@
             <div id="language-selector">
                 <i class="fa-solid fa-globe"></i>
                 <div id="language" data-lang="language"></div>
+
+                <div id="language-dropdown">
+                    
+                </div>
             </div>
             
             <div id="account-ctn">

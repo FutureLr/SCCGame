@@ -1,4 +1,4 @@
-<?php 
+<?php
 require_once("languageManager.php");
 
 header('Content-Type: application/json; charset=utf-8');
@@ -6,13 +6,12 @@ header('Content-Type: application/json; charset=utf-8');
 $langMng = new languageManager();
 
 try {
-    $userLang = $langMng->getUserLang();
+    $languages = $langMng->getLangList();
     
     echo json_encode([
         'ok' => true,
-        'userLang' => $userLang
+        'languages' => $languages
     ]);
-
 } catch(Exception $error) {
     echo json_encode([
         'ok' => false,

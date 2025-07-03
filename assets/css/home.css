@@ -19,6 +19,7 @@ body {
     background-color: #1a1d23;
     border-bottom: 1px solid #00e1ff33;
     box-shadow: 0 2px 5px rgba(0, 255, 255, 0.05);
+    height: 70px;
 }
 
 #genre-toggle-btn {
@@ -98,7 +99,7 @@ body {
 main {
     display: flex;
     width: 100%;
-    min-height: 100vh; /* đảm bảo full chiều cao nếu nội dung ít */
+    height: calc(100vh - 80px - 70px); /* đảm bảo full chiều cao nếu nội dung ít */
     position: relative;
 }
 
@@ -123,7 +124,7 @@ main {
 /* ======= Game Sections ======= */
 #game-grid {
     flex: 1;
-    padding: 25px 30px;
+    padding: 15px 20px;
     transition: margin-left 0.3s ease;
 }
 

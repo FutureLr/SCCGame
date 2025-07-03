@@ -123,7 +123,7 @@ function getBrowserLang() {
 
 // Tải dữ liệu ngôn ngữ từ YAML
 async function loadLang(langCode) {
-    let langURL = `configs/languages/${langCode}.yml`;
+    let langURL = `languages/${langCode}.yml`;
     try {
         let res = await fetch(langURL);
         if (!res.ok) {
@@ -231,8 +231,38 @@ async function applyLang(langData) {
     });
 }
 
+async function renderLanguageOptions() {
+    let response = await fetch('php/class/language/getLangList.php');
+    let responeData = await response.text();
+
+    try {
+        let data = JSON.parse(responeData);
+        if (data.ok) {
+            let langDropdown = document.querySelector("#language-dropdown");
+            langDropdown.innerHTML = "";
+            data.languages.forEach(lang => {
+                let langOtp = document.createElement('button');
+                langOtp.className = 'language-option';
+                langOtp.innerText = lang.name;
+                langOtp.onclick = () => { 
+                    changeLang(lang.code);
+                }
+                langDropdown.appendChild(langOtp);
+            });
+        } else {
+            console.warn(data.message);
+        }
+    } catch (error) {
+        console.error(error);
+        console.error(responeData);
+    }
+}
+
 // Đổi ngôn ngữ theo lựa chọn người dùng
 async function changeLang(langCode) {
+    if (langCode === localStorage.getItem('userLang')) {
+        return;
+    }
     const langData = await getLang(langCode);
     applyLang(langData);
 }
@@ -246,4 +276,6 @@ window.onload = async () => {
     // Lấy và áp dụng ngôn ngữ ngay khi trang vừa load
     const langData = await getLang();
     applyLang(langData);
+
+    renderLanguageOptions();
 }

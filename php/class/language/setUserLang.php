@@ -11,8 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
         $userLang = $langMng->setUserLang($_POST['userLang']);
 
         echo json_encode([
-            'ok' => true,
-            'message' => null,
+            'ok' => true
         ]);
     } catch (Exception $error) {
         echo json_encode([
