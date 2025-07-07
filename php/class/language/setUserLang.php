@@ -1,5 +1,6 @@
 <?php
 if ($_SERVER['REQUEST_METHOD'] === "POST") {
+    require_once('../getConfig.php');
     require_once("languageManager.php");
 
     header('Content-Type: application/json; charset=utf-8');
@@ -20,5 +21,8 @@ if ($_SERVER['REQUEST_METHOD'] === "POST") {
         ]);
     }
 } else {
-    echo "Request method not allowed.";
+    echo json_encode([
+        "ok" => false,
+        "message" => getErrorMessageByEnv('Request method not allowed.')
+    ]);
 }

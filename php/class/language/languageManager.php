@@ -1,5 +1,7 @@
 <?php
 require_once("../database/databaseConnector.php");
+require_once('../getConfig.php');
+require_once('../getErrorMessageByEnv.php');
 
 class languageManager
 {
@@ -8,9 +10,6 @@ class languageManager
     public function __construct()
     {
         $this->conn = (new databaseConnector())->getConnection();
-        if (!$this->conn) {
-            die("Database connection failed in languageManager");
-        }
     }
 
     public function getUserLang()
@@ -26,10 +25,10 @@ class languageManager
             if ($result && $row = $result->fetch_assoc()) {
                 return $row['language'];
             } else {
-                throw new Exception("getUserLang: Account not found.");
+                throw new Exception(getErrorMessageByEnv("getUserLang: Account not found."));
             }
         } else {
-            throw new Exception("getUserLang: User is not logged in.");
+            throw new Exception(getErrorMessageByEnv("getUserLang: User is not logged in."));
         }
     }
 
@@ -45,10 +44,10 @@ class languageManager
             if ($stmt->affected_rows > 0) {
                 return true;
             } else {
-                throw new Exception("setUserLang: Account not found.");
+                throw new Exception(getErrorMessageByEnv("setUserLang: Account not found."));
             }
         } else {
-            throw new Exception("setUserLang: User is not logged in.");
+            throw new Exception(getErrorMessageByEnv("setUserLang: User id not logged in."));
         }
     }
 
@@ -57,7 +56,7 @@ class languageManager
         try {
             $stmt = ($this->conn)->prepare('SELECT * FROM languages');
             if (!$stmt) {
-                throw new Exception("Prepare failed: " . $this->conn->error);
+                throw new Exception(getErrorMessageByEnv("Prepare failed: " . $this->conn->error));
             }
 
             $stmt->execute();
@@ -70,7 +69,7 @@ class languageManager
 
             return $languages;
         } catch (Exception $e) {
-            throw new Exception("getLangList error: " . $e->getMessage());
+            throw new Exception(getErrorMessageByEnv("getLangList error: ". $e->getMessage()));
         }
     }
 }
